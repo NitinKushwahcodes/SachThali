@@ -14,6 +14,7 @@ const tierBadges = {
   3: { label: 'Eat in Moderation ⚖️', bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200', dot: '⚖️' },
   4: { label: 'Eat Freely 🥗', bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-200', dot: '🥗' },
   5: { label: 'Eat Freely 🥗', bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-200', dot: '🥗' },
+  6: { label: 'No Food Detected 🚫', bg: 'bg-slate-200', text: 'text-slate-800', border: 'border-slate-300', dot: '🚫' },
 };
 
 function buildTierReason(item, totals) {
@@ -179,8 +180,9 @@ export function ResultCard({ scanResult, photoUrl, user, onConfirm, onRescan }) 
     }
   };
 
+  const isNonFood = Boolean(scanResult?.isNonFood || totals?.isNonFood || totals?.tier === 6 || items.length === 0);
   const marginKcal = Math.round(totals.kcal * ((totals.kcalMarginPercent || 25) / 100));
-  const mealBadge = tierBadges[totals.tier] || tierBadges[3];
+  const mealBadge = isNonFood ? tierBadges[6] : (tierBadges[totals.tier] || tierBadges[3]);
   const hasActiveItems = items.some((i) => i.portionQty > 0);
 
   return (
@@ -193,17 +195,25 @@ export function ResultCard({ scanResult, photoUrl, user, onConfirm, onRescan }) 
       )}
 
       {/* 1. Meal Description */}
-      <div className="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4">
-        <span className="text-[11px] font-bold text-[#3F8F5F] uppercase tracking-wider block mb-1">
-          Identified Meal
+      <div className={`border rounded-2xl p-4 ${isNonFood ? 'bg-slate-100/90 border-slate-200' : 'bg-emerald-50/60 border-emerald-100'}`}>
+        <span className={`text-[11px] font-bold uppercase tracking-wider block mb-1 ${isNonFood ? 'text-slate-600' : 'text-[#3F8F5F]'}`}>
+          {isNonFood ? 'Scan Verdict 🚫' : 'Identified Meal'}
         </span>
         <p className="text-sm text-gray-800 font-medium leading-relaxed">
           "{mealDescription}"
         </p>
       </div>
 
+      {/* Non-food explicit guidance alert */}
+      {isNonFood && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 space-y-1 font-semibold">
+          <span className="font-bold block text-sm">💡 No food items recognized</span>
+          <span>Iss photo mein koi khane ya pine ki chiz identify nahi hui. Kripya apne khane ke plate ki clear photo snap karein!</span>
+        </div>
+      )}
+
       {/* 2. Estimated Totals Block */}
-      <div className="bg-white border-2 border-emerald-500/30 rounded-3xl p-5 shadow-sm space-y-4 relative overflow-hidden">
+      <div className={`bg-white border-2 rounded-3xl p-5 shadow-sm space-y-4 relative overflow-hidden ${isNonFood ? 'border-slate-300' : 'border-emerald-500/30'}`}>
         <div className="flex justify-between items-start">
           <div>
             <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Estimated Totals</span>
@@ -410,7 +420,7 @@ export function ResultCard({ scanResult, photoUrl, user, onConfirm, onRescan }) 
 
           <button
             type="button"
-            disabled={!hasActiveItems || isUpdating || isLogging}
+            disabled={!hasActiveItems || isUpdating || isLogging || isNonFood}
             onClick={handleConfirmClick}
             className="flex-1 py-3 px-4 bg-[#3F8F5F] text-white font-bold rounded-2xl hover:bg-[#34774E] transition-colors text-sm shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50"
           >

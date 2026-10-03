@@ -59,7 +59,7 @@ export default function Signup({ onSignupSuccess }) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="user@domain.com"
               className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3F8F5F]"
             />
           </div>

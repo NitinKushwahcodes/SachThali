@@ -12,6 +12,7 @@ import { calculateFoodTier, getOilMultiplier } from './nutritionEngine.js';
 import { logInfo, logError } from '../utils/logger.js';
 
 const visionResultSchema = z.object({
+  isFood: z.boolean().optional().default(true),
   mealDescription: z.string().optional().default('Plate with identified Indian dishes'),
   items: z.array(
     z.object({
@@ -20,7 +21,7 @@ const visionResultSchema = z.object({
       portionQty: z.number().optional().default(1),
       description: z.string().optional().default(''),
     })
-  ),
+  ).optional().default([]),
 });
 
 // Resizes and converts raw input image buffer to JPEG format for efficient AI processing.
@@ -121,6 +122,20 @@ export function formatRichItem({
 export function formatMealTotals(items, remainingKcal = 1800, goal = 'weight_loss', hasHealthCondition = false) {
   const includedItems = items.filter((i) => (i.portionQty !== undefined ? i.portionQty > 0 : true));
 
+  if (includedItems.length === 0) {
+    return {
+      kcal: 0,
+      kcalMarginPercent: 0,
+      proteinG: 0,
+      carbsG: 0,
+      fatG: 0,
+      fiberG: 0,
+      tier: 6,
+      tierLabel: 'No Food Detected 🚫',
+      isNonFood: true,
+    };
+  }
+
   const kcal = includedItems.reduce((sum, i) => sum + (i.kcal || 0), 0);
   const proteinG = includedItems.reduce((sum, i) => sum + (i.proteinG || 0), 0);
   const carbsG = includedItems.reduce((sum, i) => sum + (i.carbsG || 0), 0);
@@ -176,14 +191,56 @@ export async function processFoodScan({ imageBuffer, hint = '', pieces = null, o
   });
   logInfo(`[SCAN TIMING] Gemini Vision call completed in ${Date.now() - t1}ms`);
 
+  // NON-FOOD SCAN CHECK: If Gemini detects non-food photo or 0 items
+  if (aiResult.isFood === false || !aiResult.items || aiResult.items.length === 0) {
+    logInfo('[SCAN PIPELINE] Non-food image detected by Gemini Vision');
+    return {
+      isNonFood: true,
+      mealDescription: aiResult.mealDescription || 'No edible food detected in this photo. Please upload a clear photo of your food plate!',
+      items: [],
+      totals: {
+        kcal: 0,
+        kcalMarginPercent: 0,
+        proteinG: 0,
+        carbsG: 0,
+        fatG: 0,
+        fiberG: 0,
+        tier: 6,
+        tierLabel: 'No Food Detected 🚫',
+        isNonFood: true,
+      },
+      totalKcalMin: 0,
+      totalKcalMax: 0,
+      totalKcal: 0,
+      needsClarification: false,
+      clarificationOptions: [],
+    };
+  }
+
   // Step 3: Parallel RAG Dish Retrieval using Promise.all
   const t2 = Date.now();
   const itemRetrievalPromises = aiResult.items.map(async (item) => {
     let query = item.description ? `${item.name} - ${item.description}` : item.name;
     const lower = (query + ' ' + (hint || '')).toLowerCase();
 
-    // Noodle/Chowmein explicit guard
-    if (lower.includes('noodle') || lower.includes('chowmein') || lower.includes('chow mein')) {
+    // Query routing guards for Fruit Chaat, Salads, Juices, and Noodles
+    if (lower.includes('fruit chaat') || lower.includes('fruit salad') || lower.includes('mixed fruit') || lower.includes('cut fruit')) {
+      query = 'Fruit Chaat';
+    } else if (lower.includes('mosambi juice') || lower.includes('sweet lime juice')) {
+      query = 'Mosambi Juice';
+    } else if (lower.includes('orange juice') || lower.includes('santra juice')) {
+      query = 'Orange Juice';
+    } else if (lower.includes('sugarcane juice') || lower.includes('ganne ka ras')) {
+      query = 'Sugarcane Juice';
+    } else if (lower.includes('nariyal paani') || lower.includes('coconut water')) {
+      query = 'Nariyal Paani (Coconut Water)';
+    } else if (lower.includes('watermelon juice') || lower.includes('tarbooz juice')) {
+      query = 'Watermelon Juice';
+    } else if (lower.includes('green salad') || lower.includes('kheera salad') || lower.includes('cucumber salad')) {
+      query = 'Green Salad';
+    } else if (lower.includes('sprout') && lower.includes('salad')) {
+      query = 'Sprouted Moong Salad';
+    } else if (lower.includes('noodle') || lower.includes('chowmein') || lower.includes('chow mein')) {
       if (!lower.includes('chicken') && !lower.includes('egg')) {
         query = 'Veg Chowmein';
       }
@@ -231,6 +288,7 @@ export async function processFoodScan({ imageBuffer, hint = '', pieces = null, o
   logInfo(`[SCAN TIMING] Total scan pipeline executed in ${totalTime}ms`);
 
   return {
+    isNonFood: false,
     mealDescription: aiResult.mealDescription || 'Plate of identified Indian food items',
     items,
     totals,

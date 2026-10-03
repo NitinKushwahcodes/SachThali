@@ -112,7 +112,7 @@ export function OnboardingStepper({ onComplete }) {
               required
               value={formData.fullName}
               onChange={(e) => updateField('fullName', e.target.value)}
-              placeholder="e.g. Nitin Sharma"
+              placeholder="e.g. Albert John"
               className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#3F8F5F]"
             />
           </div>
@@ -141,7 +141,7 @@ export function OnboardingStepper({ onComplete }) {
                 type="email"
                 value={formData.email}
                 onChange={(e) => updateField('email', e.target.value)}
-                placeholder="name@example.com"
+                placeholder="e.g. user@domain.com"
                 className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#3F8F5F]"
               />
             </div>
@@ -151,7 +151,7 @@ export function OnboardingStepper({ onComplete }) {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => updateField('phone', e.target.value)}
-                placeholder="+91 9876543210"
+                placeholder="e.g. +91 98765xxxxx"
                 className="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#3F8F5F]"
               />
             </div>
