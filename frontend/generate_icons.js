@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 async function generateIcons() {
-  const dir = path.resolve('frontend/public/icons');
+  const dir = path.resolve('public/icons');
   await fs.mkdir(dir, { recursive: true });
 
   // 1. Standard rounded icon SVG with centered vector 'S' path
@@ -29,7 +29,7 @@ async function generateIcons() {
   await sharp(standardBuffer).resize(512, 512).png().toFile(path.join(dir, 'pwa-512x512.png'));
   await sharp(maskableBuffer).resize(512, 512).png().toFile(path.join(dir, 'pwa-maskable-512x512.png'));
   await sharp(standardBuffer).resize(180, 180).png().toFile(path.join(dir, 'apple-touch-icon.png'));
-  await sharp(standardBuffer).resize(64, 64).toFile(path.resolve('frontend/public/favicon.ico'));
+  await sharp(standardBuffer).resize(64, 64).toFile(path.resolve('public/favicon.ico'));
 
   console.log('✅ Perfectly centered vector PWA icons generated successfully!');
 }
