@@ -1,0 +1,19 @@
+# Render.com Blueprint Infrastructure-as-Code definition for SachThali Backend API service.
+# Configures Node.js Web Service with automatic deploys on git push to main branch.
+
+services:
+  - type: web
+    name: sachthali-backend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx prisma generate
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000

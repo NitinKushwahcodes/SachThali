@@ -67,3 +67,13 @@ jobs:
           npm ci
           npm run build
 
+      - name: Trigger Render deploy hook (if configured)
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: |
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+
+      - name: Trigger Vercel deploy hook (if configured)
+        if: ${{ secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
+        run: |
+          curl -s "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"
+
