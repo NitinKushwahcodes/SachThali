@@ -1,19 +1,29 @@
 // Primary React application routing component using react-router-dom.
-// Configures SPA route paths for guest-first app: Scan, QuickLog, Log, Coach, Rewards, WeeklyReport, Profile.
+// Configures SPA route paths with React Code-Splitting (lazy loading) for instant app load speed.
 // Inspects anonymous user session state via GET /auth/me.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
-import Scan from './pages/Scan';
-import Log from './pages/Log';
-import Coach from './pages/Coach';
-import Profile from './pages/Profile';
-import QuickLog from './pages/QuickLog';
-import Rewards from './pages/Rewards';
-import WeeklyReport from './pages/WeeklyReport';
 import { ProfileGate } from './components/onboarding/ProfileGate';
 import { apiFetch } from './lib/apiClient';
+
+// Lazy-loaded page components for fast initial bundle size & instant startup
+const Scan = lazy(() => import('./pages/Scan'));
+const QuickLog = lazy(() => import('./pages/QuickLog'));
+const Log = lazy(() => import('./pages/Log'));
+const Coach = lazy(() => import('./pages/Coach'));
+const Rewards = lazy(() => import('./pages/Rewards'));
+const WeeklyReport = lazy(() => import('./pages/WeeklyReport'));
+const Profile = lazy(() => import('./pages/Profile'));
+
+function PageLoader() {
+  return (
+    <div className="flex justify-center items-center py-16">
+      <div className="w-10 h-10 border-4 border-[#3F8F5F] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+}
 
 function RequireProfile({ user, children }) {
   if (!user?.hasProfile) {
@@ -58,57 +68,52 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      <Route element={<AppShell user={user} />}>
-        <Route path="/scan" element={<Scan />} />
-        <Route
-          path="/quick-log"
-          element={
-            <RequireProfile user={user}>
-              <QuickLog />
-            </RequireProfile>
-          }
-        />
-        <Route
-          path="/log"
-          element={
-            <RequireProfile user={user}>
-              <Log />
-            </RequireProfile>
-          }
-        />
-        <Route
-          path="/coach"
-          element={
-            <RequireProfile user={user}>
-              <Coach />
-            </RequireProfile>
-          }
-        />
-        <Route
-          path="/rewards"
-          element={
-            <RequireProfile user={user}>
-              <Rewards />
-            </RequireProfile>
-          }
-        />
-        <Route
-          path="/weekly-report"
-          element={
-            <RequireProfile user={user}>
-              <WeeklyReport />
-            </RequireProfile>
-          }
-        />
-        <Route path="/profile" element={<Profile refreshUser={refreshUser} />} />
-        <Route path="/" element={<Navigate to="/scan" replace />} />
-        <Route path="/login" element={<Navigate to="/scan" replace />} />
-        <Route path="/signup" element={<Navigate to="/scan" replace />} />
-        <Route path="/plan" element={<Navigate to="/scan" replace />} />
-      </Route>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route element={<AppShell user={user} />}>
+          <Route path="/scan" element={<Scan />} />
+          <Route path="/quick-log" element={<QuickLog />} />
+          <Route
+            path="/log"
+            element={
+              <RequireProfile user={user}>
+                <Log />
+              </RequireProfile>
+            }
+          />
+          <Route
+            path="/coach"
+            element={
+              <RequireProfile user={user}>
+                <Coach />
+              </RequireProfile>
+            }
+          />
+          <Route
+            path="/rewards"
+            element={
+              <RequireProfile user={user}>
+                <Rewards />
+              </RequireProfile>
+            }
+          />
+          <Route
+            path="/weekly-report"
+            element={
+              <RequireProfile user={user}>
+                <WeeklyReport />
+              </RequireProfile>
+            }
+          />
+          <Route path="/profile" element={<Profile refreshUser={refreshUser} />} />
+          <Route path="/" element={<Navigate to="/scan" replace />} />
+          <Route path="/login" element={<Navigate to="/scan" replace />} />
+          <Route path="/signup" element={<Navigate to="/scan" replace />} />
+          <Route path="/plan" element={<Navigate to="/scan" replace />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/scan" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/scan" replace />} />
+      </Routes>
+    </Suspense>
   );
 }

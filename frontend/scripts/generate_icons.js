@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 async function generateIcons() {
-  const dir = path.resolve('frontend/public/icons');
+  const dir = path.resolve('public/icons');
   await fs.mkdir(dir, { recursive: true });
 
   // 512x512 SVG with perfectly centered 'S' vector path and 20% safe-zone margin
@@ -25,13 +25,13 @@ async function generateIcons() {
   const svgBuffer = Buffer.from(svg);
 
   // Write SVG source file to public
-  await fs.writeFile(path.resolve('frontend/public/icon.svg'), svgBuffer);
+  await fs.writeFile(path.resolve('public/icon.svg'), svgBuffer);
 
   // Generate PNG resolutions
   await sharp(svgBuffer).resize(192, 192).png().toFile(path.join(dir, 'pwa-192x192.png'));
   await sharp(svgBuffer).resize(512, 512).png().toFile(path.join(dir, 'pwa-512x512.png'));
   await sharp(svgBuffer).resize(180, 180).png().toFile(path.join(dir, 'apple-touch-icon.png'));
-  await sharp(svgBuffer).resize(64, 64).toFile(path.resolve('frontend/public/favicon.ico'));
+  await sharp(svgBuffer).resize(64, 64).toFile(path.resolve('public/favicon.ico'));
 
   console.log('✅ PWA icons regenerated with 100% centered logo!');
 }
