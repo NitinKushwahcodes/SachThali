@@ -1,9 +1,6 @@
-# Docker ignore rules for backend build context
 node_modules
 .env
-.env.local
 tests
-coverage
-*.log
+*.test.js
 .git
-.gitignore
+.vscode

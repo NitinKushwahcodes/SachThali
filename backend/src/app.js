@@ -24,10 +24,28 @@ import rewardsRoutes from './routes/rewards.routes.js';
 
 const app = express();
 
-// Configure CORS for local development and SPA frontend credentials
+// Configure CORS allowing FRONTEND_URL, localhost, AWS Amplify, and Vercel domains with credentials
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5000',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.amplifyapp.com') ||
+        origin.endsWith('.vercel.app')
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
   })
 );
@@ -72,7 +90,7 @@ app.use('/push', pushRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/rewards', rewardsRoutes);
 
-// Root healthcheck endpoint
+// Root healthcheck endpoint for Elastic Beanstalk Load Balancer health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'sachthali-backend' });
 });

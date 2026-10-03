@@ -267,52 +267,55 @@ export function ResultCard({ scanResult, photoUrl, user, onConfirm, onRescan }) 
                     isExcluded ? 'bg-gray-100/60 border-gray-200 opacity-60' : 'bg-gray-50 border-gray-200'
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`font-bold text-sm ${isExcluded ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                  {/* Top row: Name & Confidence (left), Tier badge (right) */}
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`font-bold text-sm break-words ${isExcluded ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
                           {item.name}
                         </span>
                         {!isExcluded && item.confidencePercent && (
-                          <span className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-semibold">
+                          <span className="text-[10px] bg-white border border-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-semibold shrink-0">
                             {item.confidencePercent}% {item.confidenceLabel}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-gray-500 font-medium mt-0.5 block">
-                        {item.portionText || `${item.portionQty} ${item.portionUnit}`}
-                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold border ${itemBadge.bg} ${itemBadge.text} ${itemBadge.border}`}>
-                        {itemBadge.label}
-                      </span>
+                    <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold border shrink-0 whitespace-nowrap ${itemBadge.bg} ${itemBadge.text} ${itemBadge.border}`}>
+                      {itemBadge.label}
+                    </span>
+                  </div>
 
-                      {/* Quantity Stepper Controls (+ / -) */}
-                      <div className="flex items-center border border-gray-300 rounded-xl bg-white overflow-hidden shadow-2xs">
-                        <button
-                          type="button"
-                          onClick={() => handleQuantityChange(idx, -1)}
-                          disabled={item.portionQty <= 0 || isUpdating || isLogging}
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100 disabled:opacity-30"
-                          title="Decrease quantity"
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="px-2 text-xs font-bold text-gray-800 min-w-5 text-center">
-                          {item.portionQty}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleQuantityChange(idx, 1)}
-                          disabled={item.portionQty >= 20 || isUpdating || isLogging}
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100 disabled:opacity-30"
-                          title="Increase quantity"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
+                  {/* Second row: Portion text (left) and Interactive Quantity Stepper (+ / -) (right) */}
+                  <div className="flex justify-between items-center gap-2 pt-0.5">
+                    <span className="text-xs text-gray-500 font-medium min-w-0 truncate">
+                      {item.portionText || `${item.portionQty} ${item.portionUnit}`}
+                    </span>
+
+                    {/* Quantity Stepper Controls (+ / -) */}
+                    <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-xl p-1 shadow-2xs shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleQuantityChange(idx, -1)}
+                        disabled={item.portionQty <= 0 || isUpdating || isLogging}
+                        className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-700 font-bold flex items-center justify-center transition-all disabled:opacity-30 disabled:hover:bg-gray-100"
+                        title="Decrease quantity"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="w-6 text-center text-xs font-extrabold text-gray-900 select-none">
+                        {item.portionQty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleQuantityChange(idx, 1)}
+                        disabled={item.portionQty >= 20 || isUpdating || isLogging}
+                        className="w-7 h-7 rounded-lg bg-[#3F8F5F] hover:bg-[#34774E] active:scale-95 text-white font-bold flex items-center justify-center transition-all disabled:opacity-30 disabled:hover:bg-[#3F8F5F]"
+                        title="Increase quantity"
+                      >
+                        <Plus size={14} />
+                      </button>
                     </div>
                   </div>
 
@@ -339,12 +342,12 @@ export function ResultCard({ scanResult, photoUrl, user, onConfirm, onRescan }) 
                             {isExpanded ? (
                               <>Show less <ChevronUp size={12} /></>
                             ) : (
-                              <>View more <ChevronDown size={12} /></>
+                              <>View more (+{variants.length - 4}) <ChevronDown size={12} /></>
                             )}
                           </button>
                         )}
                       </div>
-                      <div className={`flex flex-wrap gap-1.5 transition-all ${isExpanded ? '' : 'max-h-20 overflow-hidden'}`}>
+                      <div className="flex flex-wrap gap-1.5 transition-all">
                         {visibleVariants.map((v) => (
                           <button
                             key={v.dishId}

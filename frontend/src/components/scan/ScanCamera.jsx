@@ -1,27 +1,29 @@
-// Scan camera component providing file upload dropzone and live camera capture.
-// Adapts UI for desktop (file dropzone primary) vs mobile (camera view primary).
-// Converts captured photos into file objects for multipart submission to POST /scan.
-
 import React, { useRef, useState } from 'react';
-import { Camera, Upload, RefreshCw } from 'lucide-react';
+import { Camera, Upload, Image as ImageIcon } from 'lucide-react';
 import { useScreenSize } from '../../hooks/useMediaQuery';
 
-// Component managing image input selection via webcam or file browser.
 export function ScanCamera({ onImageSelected, isScanning }) {
   const { isDesktop } = useScreenSize();
-  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const videoRef = useRef(null);
-  const [useCamera, setUseCamera] = useState(!isDesktop);
   const [cameraActive, setCameraActive] = useState(false);
 
-  // Triggers file input click for manual photo selection.
-  const handleFileClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  // Opens device native camera directly
+  const handleTakeFoodPhotoClick = () => {
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
     }
   };
 
-  // Handles input file selection event.
+  // Opens photo gallery / file browser
+  const handleUploadGalleryClick = () => {
+    if (galleryInputRef.current) {
+      galleryInputRef.current.click();
+    }
+  };
+
+  // Handles image file selection
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -29,10 +31,9 @@ export function ScanCamera({ onImageSelected, isScanning }) {
     }
   };
 
-  // Starts HTML5 camera video stream for live capture.
-  const startCamera = async () => {
+  // Starts HTML5 WebRTC live camera stream
+  const startLiveWebRTCCamera = async () => {
     try {
-      setUseCamera(true);
       setCameraActive(true);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
@@ -41,13 +42,13 @@ export function ScanCamera({ onImageSelected, isScanning }) {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      console.warn('Camera access denied or unavailable', err);
+      console.warn('Live camera stream denied or unavailable', err);
       setCameraActive(false);
-      setUseCamera(false);
+      handleTakeFoodPhotoClick();
     }
   };
 
-  // Captures frame from live video element into image file.
+  // Captures frame from live WebRTC video element
   const captureFrame = () => {
     if (!videoRef.current) return;
     const canvas = document.createElement('canvas');
@@ -59,7 +60,6 @@ export function ScanCamera({ onImageSelected, isScanning }) {
     canvas.toBlob((blob) => {
       if (blob) {
         const file = new File([blob], 'food_scan.jpg', { type: 'image/jpeg' });
-        // Stop stream
         const stream = videoRef.current?.srcObject;
         stream?.getTracks().forEach((track) => track.stop());
         setCameraActive(false);
@@ -69,16 +69,27 @@ export function ScanCamera({ onImageSelected, isScanning }) {
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full flex flex-col items-center space-y-4">
+      {/* Native Camera Direct Capture Input */}
       <input
         type="file"
-        ref={fileInputRef}
+        ref={cameraInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+      />
+
+      {/* Gallery File Selection Input */}
+      <input
+        type="file"
+        ref={galleryInputRef}
         onChange={handleFileChange}
         accept="image/*"
         className="hidden"
       />
 
-      {useCamera && cameraActive ? (
+      {cameraActive ? (
         <div className="w-full max-w-md relative bg-black rounded-3xl overflow-hidden shadow-xl aspect-square flex items-center justify-center">
           <video
             ref={videoRef}
@@ -97,52 +108,61 @@ export function ScanCamera({ onImageSelected, isScanning }) {
           </div>
         </div>
       ) : (
-        <div
-          onClick={handleFileClick}
-          className={`w-full max-w-md bg-white border-2 border-dashed border-[#3F8F5F] rounded-3xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-colors shadow-sm ${
-            isDesktop ? 'aspect-[4/3]' : 'aspect-square'
-          }`}
-        >
-          <div className="w-16 h-16 rounded-full bg-emerald-100 text-[#3F8F5F] flex items-center justify-center mb-4">
-            {isDesktop ? <Upload size={32} /> : <Camera size={32} />}
-          </div>
-          <h3 className="font-bold text-gray-900 text-lg mb-1">
-            {isDesktop ? 'Upload Food Photo' : 'Take a Food Photo'}
-          </h3>
-          <p className="text-sm text-gray-500 text-center mb-4">
-            {isDesktop
-              ? 'Click to select or drag and drop your meal photo'
-              : 'Tap to capture your plate or upload an image'}
-          </p>
+        <div className="w-full max-w-md space-y-3">
+          {/* Visual Camera Dropzone Container */}
+          <div
+            onClick={handleTakeFoodPhotoClick}
+            className="w-full bg-white border-2 border-dashed border-[#3F8F5F] rounded-3xl p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-colors shadow-sm text-center"
+          >
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-[#3F8F5F] flex items-center justify-center mb-3">
+              <Camera size={32} />
+            </div>
+            <h3 className="font-extrabold text-gray-900 text-lg mb-1">
+              Snap Your Food Plate 📸
+            </h3>
+            <p className="text-xs text-gray-500 max-w-xs mb-4">
+              Position your thali in clear light and tap below to capture!
+            </p>
 
+            {/* Prominent Primary Action Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTakeFoodPhotoClick();
+              }}
+              disabled={isScanning}
+              className="w-full py-3.5 bg-[#3F8F5F] text-white font-extrabold rounded-2xl hover:bg-[#34774E] active:scale-98 transition-all shadow-md flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+            >
+              <Camera size={20} />
+              <span>Take Food Photo 📷</span>
+            </button>
+          </div>
+
+          {/* Secondary Action Button: Upload from Gallery */}
           <button
             type="button"
-            className="px-6 py-2.5 bg-[#3F8F5F] text-white font-semibold rounded-xl hover:bg-[#34774E] transition-colors shadow-sm"
+            onClick={handleUploadGalleryClick}
+            disabled={isScanning}
+            className="w-full py-3 bg-white border border-gray-300 text-gray-700 font-bold rounded-2xl hover:bg-gray-100 active:scale-98 transition-all shadow-xs flex items-center justify-center gap-2 text-xs text-center disabled:opacity-50"
           >
-            Select Photo
+            <ImageIcon size={16} className="text-[#3F8F5F]" />
+            <span>Upload from Gallery 🖼️</span>
           </button>
+
+          {/* WebRTC Live Stream Toggle Link */}
+          <div className="text-center pt-1">
+            <button
+              type="button"
+              onClick={startLiveWebRTCCamera}
+              className="text-[11px] font-semibold text-[#3F8F5F] hover:underline inline-flex items-center gap-1"
+            >
+              <Camera size={12} />
+              <span>Open Browser Live Camera Stream</span>
+            </button>
+          </div>
         </div>
       )}
-
-      <div className="mt-4 flex gap-4 text-xs font-medium text-[#3F8F5F]">
-        {!useCamera ? (
-          <button
-            type="button"
-            onClick={startCamera}
-            className="flex items-center gap-1.5 hover:underline"
-          >
-            <Camera size={14} /> Switch to Camera View
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleFileClick}
-            className="flex items-center gap-1.5 hover:underline"
-          >
-            <Upload size={14} /> Upload from Gallery
-          </button>
-        )}
-      </div>
     </div>
   );
 }

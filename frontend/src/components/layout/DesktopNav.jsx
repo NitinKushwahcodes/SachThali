@@ -34,7 +34,7 @@ export function DesktopNav({ user }) {
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between p-6 min-h-screen relative">
       <div>
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-full bg-[#3F8F5F] flex items-center justify-center text-white font-bold text-xl">
+          <div className="w-10 h-10 rounded-full bg-[#3F8F5F] flex items-center justify-center text-white font-bold text-xl leading-none select-none shrink-0 text-center">
             S
           </div>
           <div>

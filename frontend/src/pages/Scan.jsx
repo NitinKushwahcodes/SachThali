@@ -236,10 +236,12 @@ export default function Scan() {
       )}
 
       {isScanning ? (
-        <div className="bg-white border border-gray-200 rounded-3xl p-12 flex flex-col items-center justify-center w-full shadow-sm">
-          <div className="w-12 h-12 border-4 border-[#3F8F5F] border-t-transparent rounded-full animate-spin mb-4"></div>
-          <h3 className="font-bold text-gray-900 text-lg">Analyzing Food Input...</h3>
-          <p className="text-xs text-gray-500 mt-1">Fetching dish nutrition details</p>
+        <div className="bg-white border-2 border-emerald-500/30 rounded-3xl p-8 flex flex-col items-center justify-center w-full shadow-md space-y-4 text-center">
+          <div className="w-14 h-14 border-4 border-[#3F8F5F] border-t-transparent rounded-full animate-spin"></div>
+          <div className="space-y-1">
+            <h3 className="font-extrabold text-gray-900 text-lg">Analyzing your thali with care... 🥗✨</h3>
+            <p className="text-xs text-gray-600 font-semibold">Hum aapke khane ko dhyaan se examine kar rahe hain... Bas 2 seconds! 😊</p>
+          </div>
         </div>
       ) : scanResult ? (
         <ResultCard

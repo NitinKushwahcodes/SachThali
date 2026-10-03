@@ -1,8 +1,8 @@
 // Client-side HTTP fetch utility for interacting with backend REST API endpoints.
 // Sets default credentials: 'include' for cross-origin httpOnly cookie authentication.
-// Supports production VITE_API_BASE_URL environment variable for Vercel/Render deployments.
+// Supports production VITE_API_URL and VITE_API_BASE_URL environment variables for AWS Amplify and Vercel deployments.
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '');
+const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '');
 
 // Generic JSON fetch wrapper attaching content-type headers and cookie credentials.
 export async function apiFetch(endpoint, options = {}) {

@@ -30,6 +30,7 @@ export function OnboardingStepper({ onComplete }) {
     setFormData((prev) => ({ ...prev, [field]: val }));
   };
 
+  const isNameValid = Boolean(formData.fullName && formData.fullName.trim().length > 0);
   const isAgeValid = Boolean(formData.age && Number(formData.age) > 0 && Number(formData.age) <= 120);
 
   const handleGenderSelect = (selectedGender) => {
@@ -38,6 +39,10 @@ export function OnboardingStepper({ onComplete }) {
   };
 
   const handleSubmit = async () => {
+    if (!formData.fullName || !formData.fullName.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
     if (!acceptedLegal) {
       setError('Please tick the consent box before creating your profile.');
       return;
@@ -47,7 +52,7 @@ export function OnboardingStepper({ onComplete }) {
     setError('');
     try {
       const payload = {
-        fullName: formData.fullName || null,
+        fullName: formData.fullName.trim(),
         age: formData.age ? Number(formData.age) : null,
         email: formData.email || null,
         phone: formData.phone || null,
@@ -93,19 +98,22 @@ export function OnboardingStepper({ onComplete }) {
 
       {error && <div className="text-xs text-red-600 bg-red-50 p-3 rounded-xl font-semibold">{error}</div>}
 
-      {/* PAGE 1: Name, Age (mandatory), Email/Phone */}
+      {/* PAGE 1: Name (mandatory), Age (mandatory), Email/Phone */}
       {step === 1 && (
         <div className="space-y-4">
           <h3 className="text-base font-bold text-gray-900">Let's start with your basics</h3>
 
           <div>
-            <label className="text-xs text-gray-600 font-semibold block mb-1">Full Name (Optional)</label>
+            <label className="text-xs text-gray-900 font-bold block mb-1">
+              Full Name <span className="text-red-500">* (Mandatory)</span>
+            </label>
             <input
               type="text"
+              required
               value={formData.fullName}
               onChange={(e) => updateField('fullName', e.target.value)}
               placeholder="e.g. Nitin Sharma"
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3F8F5F]"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#3F8F5F]"
             />
           </div>
 
@@ -115,6 +123,7 @@ export function OnboardingStepper({ onComplete }) {
             </label>
             <input
               type="number"
+              required
               value={formData.age}
               onChange={(e) => updateField('age', e.target.value)}
               placeholder="e.g. 26"
@@ -151,7 +160,7 @@ export function OnboardingStepper({ onComplete }) {
           <div className="pt-2">
             <button
               type="button"
-              disabled={!isAgeValid}
+              disabled={!isAgeValid || !isNameValid}
               onClick={() => setStep(2)}
               className="w-full py-3 bg-[#3F8F5F] text-white font-bold rounded-2xl hover:bg-[#34774E] transition-colors shadow-sm flex items-center justify-center gap-2 text-sm disabled:opacity-40"
             >

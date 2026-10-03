@@ -12,11 +12,28 @@ import Profile from './pages/Profile';
 import QuickLog from './pages/QuickLog';
 import Rewards from './pages/Rewards';
 import WeeklyReport from './pages/WeeklyReport';
+import { ProfileGate } from './components/onboarding/ProfileGate';
 import { apiFetch } from './lib/apiClient';
+
+function RequireProfile({ user, children }) {
+  if (!user?.hasProfile) {
+    return <ProfileGate />;
+  }
+  return children;
+}
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshUser = async () => {
+    try {
+      const data = await apiFetch('/auth/me');
+      setUser(data);
+    } catch (err) {
+      setUser(null);
+    }
+  };
 
   useEffect(() => {
     async function checkAuth() {
@@ -44,12 +61,47 @@ export default function App() {
     <Routes>
       <Route element={<AppShell user={user} />}>
         <Route path="/scan" element={<Scan />} />
-        <Route path="/quick-log" element={<QuickLog />} />
-        <Route path="/log" element={<Log />} />
-        <Route path="/coach" element={<Coach />} />
-        <Route path="/rewards" element={<Rewards />} />
-        <Route path="/weekly-report" element={<WeeklyReport />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/quick-log"
+          element={
+            <RequireProfile user={user}>
+              <QuickLog />
+            </RequireProfile>
+          }
+        />
+        <Route
+          path="/log"
+          element={
+            <RequireProfile user={user}>
+              <Log />
+            </RequireProfile>
+          }
+        />
+        <Route
+          path="/coach"
+          element={
+            <RequireProfile user={user}>
+              <Coach />
+            </RequireProfile>
+          }
+        />
+        <Route
+          path="/rewards"
+          element={
+            <RequireProfile user={user}>
+              <Rewards />
+            </RequireProfile>
+          }
+        />
+        <Route
+          path="/weekly-report"
+          element={
+            <RequireProfile user={user}>
+              <WeeklyReport />
+            </RequireProfile>
+          }
+        />
+        <Route path="/profile" element={<Profile refreshUser={refreshUser} />} />
         <Route path="/" element={<Navigate to="/scan" replace />} />
         <Route path="/login" element={<Navigate to="/scan" replace />} />
         <Route path="/signup" element={<Navigate to="/scan" replace />} />

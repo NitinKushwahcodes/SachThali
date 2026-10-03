@@ -8,7 +8,7 @@ import { OnboardingStepper } from '../components/onboarding/OnboardingStepper';
 import { Target, Award, Activity } from 'lucide-react';
 
 // Component rendering user profile summary and target metrics.
-export default function Profile() {
+export default function Profile({ refreshUser }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -37,9 +37,12 @@ export default function Profile() {
   }, []);
 
   // Handles completion of profile onboarding form stepper.
-  const handleOnboardingComplete = (updatedProfile) => {
+  const handleOnboardingComplete = async (updatedProfile) => {
     setProfile(updatedProfile);
     setIsEditing(false);
+    if (refreshUser) {
+      await refreshUser();
+    }
   };
 
   if (loading) {
