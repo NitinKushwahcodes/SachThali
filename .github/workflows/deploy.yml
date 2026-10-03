@@ -1,0 +1,43 @@
+# GitHub Actions CI/CD deployment pipeline for Sachthali repository.
+# Installs backend dependencies, runs Vitest unit tests, and verifies build status on push to main branch.
+name: Sachthali CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma client
+        run: |
+          cd backend
+          npx prisma generate
+
+      - name: Run Vitest test suite
+        run: |
+          cd backend
+          npm test
+
+      - name: Verify frontend production build
+        run: |
+          cd frontend
+          npm ci
+          npm run build

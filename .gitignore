@@ -1,0 +1,12 @@
+# Root .gitignore for Sachthali project
+node_modules/
+.env
+.env.local
+.env.*.local
+dist/
+build/
+*.log
+coverage/
+.DS_Store
+.vscode/
+.idea/

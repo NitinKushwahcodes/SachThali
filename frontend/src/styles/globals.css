@@ -1,0 +1,15 @@
+/* Global CSS styles importing Tailwind directives and standard typography rules.
+   Defines color scheme variables, responsive reset utilities, and font setup.
+   Applied across all React components mounted within main.jsx. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FAF7F2;
+    color: #1F2937;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
