@@ -6,19 +6,23 @@ async function generateIcons() {
   const dir = path.resolve('public/icons');
   await fs.mkdir(dir, { recursive: true });
 
-  // 1. Standard rounded icon SVG with centered vector 'S' path
+  // Clean, ultra-bold, modern sans-serif capital 'S' vector path
+  // Perfectly centered on 512x512 canvas (bounds: X [158, 350], Y [118, 386])
+  const cleanBoldSPath = `M 346 195 L 294 195 C 294 175, 280 162, 256 162 C 232 162, 218 174, 218 190 C 218 206, 230 216, 268 226 C 316 238, 350 256, 350 306 C 350 358, 308 386, 256 386 C 198 386, 160 354, 158 305 L 210 305 C 212 328, 230 342, 256 342 C 282 342, 296 328, 296 310 C 296 292, 282 282, 244 272 C 198 260, 164 242, 164 192 C 164 142, 206 118, 256 118 C 310 118, 344 148, 346 195 Z`;
+
+  // 1. Standard rounded PWA icon SVG (rx=112 for modern app squircle)
   const standardSvg = `
   <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-    <rect width="512" height="512" rx="128" fill="#3F8F5F"/>
-    <path d="M 335 190 C 335 150, 300 128, 256 128 C 212 128, 178 152, 178 192 C 178 268, 334 252, 334 328 C 334 372, 298 396, 256 396 C 206 396, 170 368, 166 324 L 218 318 C 222 344, 238 354, 256 354 C 276 354, 284 342, 284 328 C 284 262, 128 274, 128 192 C 128 138, 178 84, 256 84 C 326 84, 381 128, 383 190 Z" fill="#FFFFFF"/>
+    <rect width="512" height="512" rx="112" fill="#3F8F5F"/>
+    <path d="${cleanBoldSPath}" fill="#FFFFFF"/>
   </svg>`;
 
-  // 2. Maskable PWA icon (with 15% inner safe zone padding for Android circular/squircle launchers)
+  // 2. Maskable PWA icon (with 15% inner safe zone padding for Android launcher circular/squircle crops)
   const maskableSvg = `
   <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
     <rect width="512" height="512" fill="#3F8F5F"/>
     <g transform="translate(51.2, 51.2) scale(0.8)">
-      <path d="M 335 190 C 335 150, 300 128, 256 128 C 212 128, 178 152, 178 192 C 178 268, 334 252, 334 328 C 334 372, 298 396, 256 396 C 206 396, 170 368, 166 324 L 218 318 C 222 344, 238 354, 256 354 C 276 354, 284 342, 284 328 C 284 262, 128 274, 128 192 C 128 138, 178 84, 256 84 C 326 84, 381 128, 383 190 Z" fill="#FFFFFF"/>
+      <path d="${cleanBoldSPath}" fill="#FFFFFF"/>
     </g>
   </svg>`;
 
@@ -31,7 +35,7 @@ async function generateIcons() {
   await sharp(standardBuffer).resize(180, 180).png().toFile(path.join(dir, 'apple-touch-icon.png'));
   await sharp(standardBuffer).resize(64, 64).toFile(path.resolve('public/favicon.ico'));
 
-  console.log('✅ Perfectly centered vector PWA icons generated successfully!');
+  console.log('✅ Clean, bold sans-serif vector PWA icons generated successfully!');
 }
 
 generateIcons().catch(console.error);
