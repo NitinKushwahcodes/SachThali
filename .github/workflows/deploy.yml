@@ -1,5 +1,5 @@
 # GitHub Actions CI/CD deployment pipeline for Sachthali repository.
-# Installs backend dependencies, runs Vitest unit tests, and verifies build status on push to main branch.
+# Installs dependencies, initializes PostgreSQL test database, runs Vitest unit tests, and verifies frontend build.
 name: Sachthali CI/CD Pipeline
 
 on:
@@ -11,6 +11,21 @@ on:
 jobs:
   test-and-verify:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sachthalidb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -26,12 +41,22 @@ jobs:
           cd backend
           npm ci
 
-      - name: Generate Prisma client
+      - name: Generate Prisma client & migrate test schema
+        env:
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/sachthalidb'
         run: |
           cd backend
           npx prisma generate
+          npx prisma db push --skip-generate
 
       - name: Run Vitest test suite
+        env:
+          NODE_ENV: test
+          VITEST: 'true'
+          CI: 'true'
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/sachthalidb'
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'mock_gemini_api_key_ci_testing_123' }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'mock_jwt_secret_key_ci_testing_123' }}
         run: |
           cd backend
           npm test
@@ -41,3 +66,4 @@ jobs:
           cd frontend
           npm ci
           npm run build
+

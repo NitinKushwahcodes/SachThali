@@ -14,6 +14,14 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 // Validates that required environment variables exist and are non-empty.
 export function validateEnv() {
+  // In test environment or CI execution, supply mock fallbacks for missing keys
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST || process.env.CI) {
+    if (!process.env.GEMINI_API_KEY) process.env.GEMINI_API_KEY = 'mock_gemini_api_key_ci_testing_123';
+    if (!process.env.DATABASE_URL) process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/sachthalidb';
+    if (!process.env.JWT_SECRET) process.env.JWT_SECRET = 'mock_jwt_secret_key_ci_testing_123';
+    return;
+  }
+
   const mandatoryKeys = ['GEMINI_API_KEY', 'DATABASE_URL', 'JWT_SECRET'];
   const missingKeys = [];
 
